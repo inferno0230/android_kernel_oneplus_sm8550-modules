@@ -6450,8 +6450,8 @@ int dsi_display_dev_probe(struct platform_device *pdev)
 		_iris_dsi_display_get_panel_node(pdev, index, true, is_sencondary_panel);
 	} else if (is_project(23801)) {
 		DSI_INFO("This project support iris7p***\n");
-		is_sencondary_panel = false;
-		_iris_dsi_display_get_panel_node(pdev, index, true, is_sencondary_panel);
+		//is_sencondary_panel = false;
+		//_iris_dsi_display_get_panel_node(pdev, index, true, is_sencondary_panel);
 	}else {
 		DSI_INFO("This project does not support iris\n");
 	}
