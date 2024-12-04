@@ -51,6 +51,11 @@
 #endif
 #endif
 
+#ifdef OPLUS_FEATURE_WIFI_MAC
+#include <soc/oplus/system/boot_mode.h>
+#include <soc/oplus/system/oplus_project.h>
+#endif /* OPLUS_FEATURE_WIFI_MAC */
+
 #define CNSS_DUMP_FORMAT_VER		0x11
 #define CNSS_DUMP_FORMAT_VER_V2		0x22
 #define CNSS_DUMP_MAGIC_VER_V2		0x42445953
@@ -1157,7 +1162,12 @@ static int cnss_setup_dms_mac(struct cnss_plat_data *plat_priv)
 	/* DTSI property use-nv-mac is used to force DMS MAC address for WLAN.
 	 * Thus assert on failure to get MAC from DMS even after retries
 	 */
+#ifndef OPLUS_FEATURE_WIFI_MAC
+//Add for boot wlan mode not use NV mac
 	if (plat_priv->use_nv_mac) {
+#else
+        if ((get_boot_mode() !=  MSM_BOOT_MODE__WLAN) && plat_priv->use_nv_mac) {
+#endif /* OPLUS_FEATURE_WIFI_MAC */
 		/* Check if Daemon says platform support DMS MAC provisioning */
 		cfg = cnss_plat_ipc_qmi_daemon_config();
 		if (cfg) {
@@ -1178,7 +1188,9 @@ static int cnss_setup_dms_mac(struct cnss_plat_data *plat_priv)
 		}
 		if (!plat_priv->dms.mac_valid) {
 			cnss_pr_err("Unable to get MAC from DMS after retries\n");
+#ifndef OPLUS_FEATURE_WIFI_MAC
 			CNSS_ASSERT(0);
+#endif /* OPLUS_FEATURE_WIFI_MAC */
 			return -EINVAL;
 		}
 	}
@@ -5157,6 +5169,31 @@ static const struct of_device_id cnss_of_match_table[] = {
 };
 MODULE_DEVICE_TABLE(of, cnss_of_match_table);
 
+#ifdef OPLUS_FEATURE_WIFI_FTM
+//Add for QCOM WCN chip id
+static void icnss_create_device_id_kobj(void);
+
+static ssize_t icnss_show_device_id(struct device_driver *driver, char *buf)
+{
+    unsigned long device_id = 0;
+    if (!plat_env) {
+        cnss_pr_err("icnss_show_device_id plat_env is NULL!\n");
+    } else {
+        device_id = plat_env->device_id;
+    }
+    return sprintf(buf, "0x%lx", device_id);
+}
+
+struct driver_attribute device_id_attr = {
+	.attr = {
+		.name = "device_id",
+		.mode = S_IRUGO,
+	},
+	.show = icnss_show_device_id,
+	//read only so we don't need to impl store func
+};
+#endif /* OPLUS_FEATURE_WIFI_FTM */
+
 static inline bool
 cnss_use_nv_mac(struct cnss_plat_data *plat_priv)
 {
@@ -5604,6 +5641,11 @@ static int cnss_probe(struct platform_device *plat_dev)
 	cnss_aop_interface_init(plat_priv);
 	cnss_init_control_params(plat_priv);
 
+	#ifdef OPLUS_FEATURE_WIFI_FTM
+    //Add for QCOM WCN chip id
+    icnss_create_device_id_kobj();
+    #endif /* OPLUS_FEATURE_WIFI_FTM */
+
 	ret = cnss_get_resources(plat_priv);
 	if (ret)
 		goto reset_ctx;
@@ -5762,6 +5804,16 @@ static bool cnss_is_valid_dt_node_found(void)
 
 	return false;
 }
+
+#ifdef OPLUS_FEATURE_WIFI_FTM
+//Add for QCOM WCN chip id
+static void icnss_create_device_id_kobj(void)
+{
+    if (driver_create_file(&(cnss_platform_driver.driver), &device_id_attr)) {
+        cnss_pr_info("failed to create %s", device_id_attr.attr.name);
+    }
+}
+#endif /* OPLUS_FEATURE_WIFI_FTM */
 
 static int __init cnss_initialize(void)
 {
