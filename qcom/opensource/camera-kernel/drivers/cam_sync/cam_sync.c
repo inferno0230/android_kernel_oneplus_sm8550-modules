@@ -1968,8 +1968,8 @@ static int cam_sync_component_bind(struct device *dev,
 
 	if (of_property_read_bool(pdev->dev.of_node, "sync-workq-setUX"))
 	{
-		flags = (WQ_HIGHPRI | WQ_UNBOUND | WQ_UX);
-		CAM_INFO(CAM_UTIL, "sync workq create flag: WQ_HIGHPRI | WQ_UNBOUND | WQ_UX");
+		flags = (WQ_HIGHPRI | WQ_UNBOUND);
+		CAM_INFO(CAM_UTIL, "sync workq create flag: WQ_HIGHPRI | WQ_UNBOUND");
 	}
 	sync_dev->work_queue = alloc_workqueue(CAM_SYNC_WORKQUEUE_NAME,
 		flags, 1);
