@@ -5,7 +5,11 @@ endif
 
 KBUILD_OPTIONS += KGSL_PATH=$(KGSL_MODULE_ROOT)
 KBUILD_OPTIONS += MODNAME=msm_kgsl
-KBUILD_OPTIONS += BOARD_PLATFORM=kalama
+ifneq ($(shell grep -w "^CONFIG_ARCH_CROW=y" $(OUT_DIR)/../KERNEL_OBJ/.config),)
+  KBUILD_OPTIONS += BOARD_PLATFORM=crow
+else
+  KBUILD_OPTIONS += BOARD_PLATFORM=kalama
+endif
 
 all: modules
 

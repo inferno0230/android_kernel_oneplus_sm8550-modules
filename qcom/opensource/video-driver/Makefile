@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 KBUILD_OPTIONS += VIDEO_ROOT=$(KERNEL_SRC)/$(M)
-KBUILD_OPTIONS += BOARD_PLATFORM=kalama
+ifneq ($(shell grep -w "^CONFIG_ARCH_CROW=y" $(OUT_DIR)/../KERNEL_OBJ/.config),)
+  KBUILD_OPTIONS += BOARD_PLATFORM=crow
+else
+  KBUILD_OPTIONS += BOARD_PLATFORM=kalama
+endif
 
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(OUT_DIR)/../sm8550-modules/qcom/opensource/mmrm-driver/Module.symvers
 

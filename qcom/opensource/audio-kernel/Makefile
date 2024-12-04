@@ -3,7 +3,11 @@ AUDIO_ROOT=$(KERNEL_SRC)/$(M)
 
 KBUILD_OPTIONS += AUDIO_ROOT=$(AUDIO_ROOT)
 KBUILD_OPTIONS += MODNAME=audio_dlkm
-KBUILD_OPTIONS += BOARD_PLATFORM=kalama
+ifneq ($(shell grep -w "^CONFIG_ARCH_CROW=y" $(OUT_DIR)/../KERNEL_OBJ/.config),)
+  KBUILD_OPTIONS += BOARD_PLATFORM=crow
+else
+  KBUILD_OPTIONS += BOARD_PLATFORM=kalama
+endif
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(OUT_DIR)/../sm8550-modules/qcom/opensource/mm-drivers/msm_ext_display/Module.symvers
 
 all: modules
