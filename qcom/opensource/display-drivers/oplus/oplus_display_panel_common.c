@@ -2178,12 +2178,12 @@ int oplus_display_update_clk_ffc(struct dsi_display *display,
 	struct dsi_panel *panel = display->panel;
 	struct oplus_clk_osc clk_osc_pending;
 
-	DSI_MM_INFO("DisplayDriverID@@426$$Switching ffc mode, clk:[%d -> %d]",
+	DSI_INFO("DisplayDriverID@@426$$Switching ffc mode, clk:[%d -> %d]",
 			display->cached_clk_rate,
 			display->dyn_bit_clk);
 
 	if (display->cached_clk_rate == display->dyn_bit_clk) {
-		DSI_MM_WARN("DisplayDriverID@@427$$Ignore duplicated clk ffc setting, clk=%d",
+		DSI_WARN("DisplayDriverID@@427$$Ignore duplicated clk ffc setting, clk=%d",
 				display->dyn_bit_clk);
 		return rc;
 	}
@@ -2197,7 +2197,7 @@ int oplus_display_update_clk_ffc(struct dsi_display *display,
 	if (!rc) {
 		panel->oplus_priv.ffc_delay_frames = FFC_DELAY_MAX_FRAMES;
 	} else {
-		DSI_MM_ERR("DisplayDriverID@@427$$Failed to find ffc mode index, clk=%d, osc=%d",
+		DSI_ERR("DisplayDriverID@@427$$Failed to find ffc mode index, clk=%d, osc=%d",
 				clk_osc_pending.clk_rate,
 				clk_osc_pending.osc_rate);
 	}
@@ -2214,12 +2214,12 @@ int oplus_display_update_osc_ffc(struct dsi_display *display,
 	struct dsi_panel *panel = display->panel;
 	struct oplus_clk_osc clk_osc_pending;
 
-	DSI_MM_INFO("DisplayDriverID@@428$$Switching ffc mode, osc:[%d -> %d]",
+	DSI_INFO("DisplayDriverID@@428$$Switching ffc mode, osc:[%d -> %d]",
 			panel->oplus_priv.osc_rate_cur,
 			osc_rate);
 
 	if (osc_rate == panel->oplus_priv.osc_rate_cur) {
-		DSI_MM_WARN("DisplayDriverID@@429$$Ignore duplicated osc ffc setting, osc=%d",
+		DSI_WARN("DisplayDriverID@@429$$Ignore duplicated osc ffc setting, osc=%d",
 				panel->oplus_priv.osc_rate_cur);
 		return rc;
 	}
@@ -2230,7 +2230,7 @@ int oplus_display_update_osc_ffc(struct dsi_display *display,
 	clk_osc_pending.osc_rate = osc_rate;
 	rc = oplus_panel_check_ffc_config(panel, &clk_osc_pending);
 	if (rc) {
-		DSI_MM_ERR("DisplayDriverID@@429$$Failed to find ffc mode index, clk=%d, osc=%d",
+		DSI_ERR("DisplayDriverID@@429$$Failed to find ffc mode index, clk=%d, osc=%d",
 				clk_osc_pending.clk_rate,
 				clk_osc_pending.osc_rate);
 	}

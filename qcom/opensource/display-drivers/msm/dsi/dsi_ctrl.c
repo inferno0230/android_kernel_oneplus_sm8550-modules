@@ -24,7 +24,6 @@
 #include "sde_dbg.h"
 
 #ifdef OPLUS_FEATURE_DISPLAY
-#include <soc/oplus/system/oplus_mm_kevent_fb.h>
 #include "../oplus/oplus_display_interface.h"
 #endif /* OPLUS_FEATURE_DISPLAY */
 
@@ -50,15 +49,6 @@
 		fmt, c->name, ##__VA_ARGS__)
 #define DSI_CTRL_WARN(c, fmt, ...)	DRM_WARN("[msm-dsi-warn]: %s: " fmt,\
 		c ? c->name : "inv", ##__VA_ARGS__)
-
-#ifdef OPLUS_FEATURE_DISPLAY
-#define DSI_CTRL_MM_ERR(c, fmt, ...) \
-	do { \
-		DRM_DEV_ERROR(NULL, "[msm-dsi-error]: %s: "\
-				fmt, c ? c->name : "inv", ##__VA_ARGS__); \
-		mm_fb_display_kevent_named(MM_FB_KEY_RATELIMIT_1H, fmt, ##__VA_ARGS__); \
-	} while(0)
-#endif /* OPLUS_FEATURE_DISPLAY */
 
 struct dsi_ctrl_list_item {
 	struct dsi_ctrl *ctrl;
@@ -399,7 +389,7 @@ static void dsi_ctrl_dma_cmd_wait_for_done(struct dsi_ctrl *dsi_ctrl)
 		status = dsi_hw_ops.get_interrupt_status(&dsi_ctrl->hw);
 		if (status & mask) {
 #ifdef OPLUS_FEATURE_DISPLAY
-			DSI_CTRL_MM_ERR(dsi_ctrl, "DisplayDriverID@@416$$dma_tx done but irq not triggered, status=%X, mask=%X\n",
+			DSI_CTRL_ERR(dsi_ctrl, "DisplayDriverID@@416$$dma_tx done but irq not triggered, status=%X, mask=%X\n",
 					status, mask);
 #endif /* OPLUS_FEATURE_DISPLAY */
 			status |= (DSI_CMD_MODE_DMA_DONE | DSI_BTA_DONE);
@@ -413,7 +403,7 @@ static void dsi_ctrl_dma_cmd_wait_for_done(struct dsi_ctrl *dsi_ctrl)
 			DSI_CTRL_ERR(dsi_ctrl,
 					"Command transfer failed\n");
 #ifdef OPLUS_FEATURE_DISPLAY
-			DSI_CTRL_MM_ERR(dsi_ctrl, "DisplayDriverID@@401$$Command transfer failed, status=%X, mask=%X\n",
+			DSI_CTRL_ERR(dsi_ctrl, "DisplayDriverID@@401$$Command transfer failed, status=%X, mask=%X\n",
 					status, mask);
 #endif /* OPLUS_FEATURE_DISPLAY */
 		}
@@ -1151,7 +1141,7 @@ static int dsi_ctrl_enable_supplies(struct dsi_ctrl *dsi_ctrl, bool enable)
 			DSI_CTRL_ERR(dsi_ctrl, "failed to enable power resource %d\n", rc);
 			SDE_EVT32(rc, SDE_EVTLOG_ERROR);
 #ifdef OPLUS_FEATURE_DISPLAY
-			DSI_CTRL_MM_ERR(dsi_ctrl, "DisplayDriverID@@406$$Power resource enable failed, rc=%d\n", rc);
+			DSI_CTRL_ERR(dsi_ctrl, "DisplayDriverID@@406$$Power resource enable failed, rc=%d\n", rc);
 #endif /* OPLUS_FEATURE_DISPLAY */
 			goto error;
 		}
@@ -1162,7 +1152,7 @@ static int dsi_ctrl_enable_supplies(struct dsi_ctrl *dsi_ctrl, bool enable)
 			if (rc) {
 				DSI_CTRL_ERR(dsi_ctrl, "failed to enable host power regs\n");
 #ifdef OPLUS_FEATURE_DISPLAY
-				DSI_CTRL_MM_ERR(dsi_ctrl, "DisplayDriverID@@406$$failed to enable host power regs\n");
+				DSI_CTRL_ERR(dsi_ctrl, "DisplayDriverID@@406$$failed to enable host power regs\n");
 #endif /* OPLUS_FEATURE_DISPLAY */
 				goto error_get_sync;
 			}
