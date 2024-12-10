@@ -265,7 +265,7 @@ static int32_t cam_get_source_node_info(
 				"qcom,current-ma",
 				&soc_private->torch_op_current[i]);
 			if (rc < 0) {
-				CAM_WARN(CAM_FLASH,
+				CAM_DBG(CAM_FLASH,
 					"op-current prop unavailable: %d", rc);
 				rc = 0;
 			}
@@ -312,6 +312,28 @@ int cam_flash_get_dt_data(struct cam_flash_ctrl *fctrl,
 		CAM_ERR(CAM_FLASH, "Get_dt_properties failed rc %d", rc);
 		goto free_soc_private;
 	}
+
+#ifdef OPLUS_FEATURE_CAMERA_COMMON
+	rc = of_property_read_string(of_node, "qcom,flash-name",
+		&fctrl->flash_name);
+	if (rc < 0) {
+		pr_err("get flash_name failed rc %d\n", rc);
+	}
+	fctrl->flash_current = 0;
+	rc = of_property_read_u32(of_node, "qcom,flash-current",
+		&fctrl->flash_current);
+	if (rc < 0) {
+		pr_err("get flash_current failed rc %d\n", rc);
+	}
+	fctrl->flash_max_current = 0;
+	rc = of_property_read_u32(of_node, "oplus,flash-max-current",
+		&fctrl->flash_max_current);
+		pr_err("get flash_max_current = %d\n", &fctrl->flash_max_current);
+	if (rc < 0) {
+		pr_err("get flash_max_current failed rc %d\n", rc);
+	}
+
+#endif
 
 #if __or(IS_ENABLED(CONFIG_LEDS_QPNP_FLASH_V2), \
 			IS_ENABLED(CONFIG_LEDS_QTI_FLASH))
