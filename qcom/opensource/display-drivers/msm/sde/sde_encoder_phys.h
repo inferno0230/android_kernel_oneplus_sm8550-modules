@@ -568,6 +568,16 @@ void sde_encoder_phys_setup_cdm(struct sde_encoder_phys *phys_enc,
 void sde_encoder_helper_get_pp_line_count(struct drm_encoder *drm_enc,
 		struct sde_hw_pp_vsync_info *info);
 
+#if defined(CONFIG_PXLW_IRIS)
+/**
+ * sde_encoder_get_transfer_time - get the mdp transfer time in usecs
+ * @drm_enc: Pointer to drm encoder structure
+ * @transfer_time_us: Pointer to store the output value
+ */
+void sde_encoder_get_transfer_time(struct drm_encoder *drm_enc,
+		u32 *transfer_time_us);
+#endif
+
 /**
  * sde_encoder_helper_get_kickoff_timeout_ms- get the kickoff timeout value based on fps
  * @drm_enc: Pointer to drm encoder structure
@@ -614,6 +624,7 @@ int sde_encoder_helper_wait_event_timeout(
 
 /*
  * sde_encoder_get_fps - get the allowed panel jitter in nanoseconds
+
  * @frame_rate: custom input frame rate
  * @jitter_num: jitter numerator value
  * @jitter_denom: jitter denomerator value,
