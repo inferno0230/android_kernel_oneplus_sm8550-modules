@@ -1,0 +1,10 @@
+obj-y += qcom/ codecs/
+obj-y += codecs/tfa98xx-v6/
+#add for aw882xx bringup
+obj-y += codecs/aw882xx/
+#add for sipa
+#obj-y += codecs/sipa/
+#add for aw87xxx pa
+#obj-y += codecs/aw87xxx/
+#obj-y += qcom/oplus_speaker_manager/
+#obj-y += codecs/usbc_switch/
