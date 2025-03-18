@@ -767,16 +767,16 @@ mlo_prepare_and_send_connect(struct wlan_objmgr_vdev *vdev,
 
 	mlo_update_connect_req_chan_info(&req);
 
-	qdf_mem_copy(req.bssid.bytes,
-		     link_info.link_addr.bytes,
-		     QDF_MAC_ADDR_SIZE);
+	qdf_copy_macaddr(&req.bssid, &link_info.link_addr);
+	qdf_copy_macaddr(&req.bssid_hint, &link_info.link_addr);
 
-	qdf_mem_copy(&req.ml_parnter_info,
-		     &ml_parnter_info,
+	qdf_mem_copy(&req.ml_parnter_info, &ml_parnter_info,
 		     sizeof(struct mlo_partner_info));
 
 	req.vdev_id = wlan_vdev_get_id(vdev);
 	req.ssid.length = ssid.length;
+	req.chan_freq = link_info.chan_freq;
+	req.link_id =  link_info.link_id;
 	qdf_mem_copy(&req.ssid.ssid, &ssid.ssid, ssid.length);
 	if (mld_addr)
 		qdf_copy_macaddr(&req.mld_addr, mld_addr);

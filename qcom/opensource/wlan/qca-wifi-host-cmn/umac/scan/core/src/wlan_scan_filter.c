@@ -582,14 +582,14 @@ static bool scm_is_security_match(struct scan_filter *filter,
 	return match;
 }
 
-static bool scm_ignore_ssid_check_for_owe(struct scan_filter *filter,
-					  struct scan_cache_entry *db_entry)
+static bool
+scm_ignore_ssid_check_for_hidden_bss(struct scan_filter *filter,
+				     struct scan_cache_entry *db_entry)
 {
 	bool is_hidden;
 
 	is_hidden = util_scan_entry_is_hidden_ap(db_entry);
 	if (is_hidden &&
-	    QDF_HAS_PARAM(filter->key_mgmt, WLAN_CRYPTO_KEY_MGMT_OWE) &&
 	    util_is_bssid_match(&filter->bssid_hint, &db_entry->bssid))
 		return true;
 
@@ -724,6 +724,15 @@ static bool util_mlo_filter_match(struct wlan_objmgr_pdev *pdev,
 				  QDF_MAC_ADDR_REF(filter->mld_addr.bytes));
 			return false;
 		}
+	}
+
+	if (filter->match_link_id && filter->link_id != WLAN_INVALID_LINK_ID &&
+	    filter->link_id != util_scan_entry_self_linkid(db_entry)) {
+		scm_debug(QDF_MAC_ADDR_FMT " link id %d mismatch filter link id %d",
+			  QDF_MAC_ADDR_REF(db_entry->bssid.bytes),
+			  util_scan_entry_self_linkid(db_entry),
+			  filter->link_id);
+		return false;
 	}
 
 	if (!db_entry->ie_list.multi_link_bv)
@@ -861,10 +870,11 @@ bool scm_filter_match(struct wlan_objmgr_psoc *psoc,
 	/*
 	 * In OWE transition mode, ssid is hidden. And supplicant does not issue
 	 * scan with specific ssid prior to connect as in other hidden ssid
-	 * cases. Add explicit check to allow OWE when ssid is hidden.
+	 * cases. Also for partner link connect, the scan entry of partner link
+	 * might not have SSID known so allow scan entry match with bssid hint.
 	 */
 	if (!match)
-		match = scm_ignore_ssid_check_for_owe(filter, db_entry);
+		match = scm_ignore_ssid_check_for_hidden_bss(filter, db_entry);
 
 	if (!match && filter->num_of_ssid)
 		return false;
