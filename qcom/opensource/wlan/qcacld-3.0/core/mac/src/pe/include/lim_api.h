@@ -619,6 +619,7 @@ void lim_get_basic_rates(tSirMacRateSet *b_rates, uint32_t chan_freq);
  * @mac_ctx: Pointer to mac context
  * @session: pe session
  * @bss_desc: Pointer to bss description
+ * @req_fail_status_code: Connect req fail status code pointer
  *
  * This api will fill lim pe session with info
  * from bss description
@@ -628,7 +629,8 @@ void lim_get_basic_rates(tSirMacRateSet *b_rates, uint32_t chan_freq);
 QDF_STATUS
 lim_fill_pe_session(struct mac_context *mac_ctx,
 		    struct pe_session *session,
-		    struct bss_description *bss_desc);
+		    struct bss_description *bss_desc,
+		    enum wlan_status_code *req_fail_status_code);
 
 #ifdef WLAN_FEATURE_11BE_MLO
 /**
@@ -845,12 +847,11 @@ lim_cm_fill_link_session(struct mac_context *mac_ctx,
  *
  * This api will create mlo peer called during mlo roaming scenario
  *
- * Return: none
+ * Return: QDF_STATUS
  */
-void lim_roam_mlo_create_peer(struct mac_context *mac,
-			      struct roam_offload_synch_ind *sync_ind,
-			      uint8_t vdev_id,
-			      uint8_t *peer_mac);
+QDF_STATUS lim_roam_mlo_create_peer(struct mac_context *mac,
+				    struct roam_offload_synch_ind *sync_ind,
+				    uint8_t vdev_id, uint8_t *peer_mac);
 
 /**
  * lim_mlo_roam_delete_link_peer() - Delete mlo link peer
@@ -892,12 +893,12 @@ lim_cm_fill_link_session(struct mac_context *mac_ctx,
 	return QDF_STATUS_E_NOSUPPORT;
 }
 
-static inline void
+static inline QDF_STATUS
 lim_roam_mlo_create_peer(struct mac_context *mac,
 			 struct roam_offload_synch_ind *sync_ind,
-			 uint8_t vdev_id,
-			 uint8_t *peer_mac)
+			 uint8_t vdev_id, uint8_t *peer_mac)
 {
+	return QDF_STATUS_SUCCESS;
 }
 
 static inline void
