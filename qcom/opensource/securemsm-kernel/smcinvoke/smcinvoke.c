@@ -194,6 +194,9 @@ static bool legacy_smc_call;
 static int invoke_cmd;
 
 static long smcinvoke_ioctl(struct file *, unsigned int, unsigned long);
+#ifdef CONFIG_COMPAT
+static long smcinvoke_compat_ioctl(struct file *, unsigned int, unsigned long);
+#endif
 static int smcinvoke_open(struct inode *, struct file *);
 static int smcinvoke_release(struct inode *, struct file *);
 static int release_cb_server(uint16_t);
@@ -201,7 +204,9 @@ static int release_cb_server(uint16_t);
 static const struct file_operations g_smcinvoke_fops = {
 	.owner		= THIS_MODULE,
 	.unlocked_ioctl	= smcinvoke_ioctl,
-	.compat_ioctl	= smcinvoke_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl	= smcinvoke_compat_ioctl,
+#endif
 	.open		= smcinvoke_open,
 	.release	= smcinvoke_release,
 };
@@ -2392,6 +2397,7 @@ static long process_invoke_req(struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	int    ret = -1, nr_args = 0;
+	int nr_args_cnt = 0;
 	struct smcinvoke_cmd_req req = {0};
 	void   *in_msg = NULL, *out_msg = NULL;
 	size_t inmsg_size = 0, outmsg_size = SMCINVOKE_TZ_MIN_BUF_SIZE;
@@ -2449,11 +2455,16 @@ static long process_invoke_req(struct file *filp, unsigned int cmd,
 
 	nr_args = OBJECT_COUNTS_NUM_buffers(req.counts) +
 			OBJECT_COUNTS_NUM_objects(req.counts);
+	/*
+	 * In case nr_args is zero, allocate one buffer so that args_buf points to a valid
+	 * buffer. There is no need to copy anything to the buffer
+	 */
+	nr_args_cnt = ((nr_args > 0) ? nr_args : 1);
 
+	args_buf = kcalloc(nr_args_cnt, req.argsize, GFP_KERNEL);
+	if (!args_buf)
+		return -ENOMEM;
 	if (nr_args) {
-		args_buf = kcalloc(nr_args, req.argsize, GFP_KERNEL);
-		if (!args_buf)
-			return -ENOMEM;
 		if (context_type == SMCINVOKE_OBJ_TYPE_TZ_OBJ) {
 			ret = copy_from_user(args_buf,
 					u64_to_user_ptr(req.args),
@@ -2607,7 +2618,13 @@ static long smcinvoke_ioctl(struct file *filp, unsigned int cmd,
 	trace_smcinvoke_ioctl(cmd, ret);
 	return ret;
 }
-
+#ifdef CONFIG_COMPAT
+static long smcinvoke_compat_ioctl(struct file * flip, unsigned int cmd,
+						unsigned long arg)
+{
+	return smcinvoke_ioctl(flip, cmd, arg);
+}
+#endif
 int get_root_fd(int *root_fd)
 {
 	if (!root_fd)
