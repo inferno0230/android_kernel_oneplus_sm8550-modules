@@ -18,6 +18,7 @@
 #include "dsi_iris_lightup.h"
 #include "dsi_iris_lightup_ocp.h"
 #include "dsi_iris_lp.h"
+
 #include "dsi_iris_pq.h"
 #include "dsi_iris_log.h"
 #include "dsi_iris_reg_i7.h"
@@ -668,6 +669,7 @@ u32 iris_fi_demo_win_color_get_i7(void)
 	u32 val = 0x51ef5a;
 	struct iris_cfg *pcfg = iris_get_cfg();
 
+	IRIS_LOGE("FEI_MEMC %s:  pcfg:[0x%x, 0x%x]", __func__, pcfg->frc_trilateral, pcfg->frc_demo_window);
 	switch (pcfg->memc_info.memc_mode) {
 	case MEMC_SINGLE_VIDEO_ENABLE:
 		if (pcfg->memc_info.tnr_en)
@@ -679,10 +681,16 @@ u32 iris_fi_demo_win_color_get_i7(void)
 		val = 0x902235;  /* green */
 		break;
 	case MEMC_DUAL_GAME_ENABLE:
-		val = 0xceddca;  /* magenta */
+		if ((pcfg->frc_demo_window == DEMO_WINDOW_FULL_OEM) && pcfg->frc_trilateral)
+			val = 0x286def;  /* ememc dual blue */
+		else
+			val = 0xceddca;  /* magenta */
 		break;
 	case MEMC_SINGLE_GAME_ENABLE:
-		val = 0xd29210;  /* yellow */
+		if ((pcfg->frc_demo_window == DEMO_WINDOW_FULL_OEM) && pcfg->frc_trilateral)
+			val = 0x286def;  /* ememc single blue */
+		else
+			val = 0xd29210;  /* yellow */
 		break;
 	case MEMC_DUAL_EXTMV_ENABLE:
 		val = 0x286def;  /* blue */
@@ -727,25 +735,26 @@ void iris_fi_reg_set_i7(void)
 	demo_win_yuv = iris_fi_demo_win_color_get_i7();
 	iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_YUV_VALUE, demo_win_yuv, 0);
 
-	if (pcfg->frc_demo_window == 1) {
+	if (pcfg->frc_demo_window == DEMO_WINDOW_LEFT) {
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_0,  0, 0);
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_1,
 				frc_setting->mv_vres << 15 | frc_setting->mv_hres, 0);
-	} else if (pcfg->frc_demo_window == 2) {
+	} else if (pcfg->frc_demo_window == DEMO_WINDOW_RIGHT) {
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_0,
 				frc_setting->mv_vres << 15, 0);
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_1,
 				frc_setting->mv_vres << 16 | frc_setting->mv_hres, 0);
-	} else if (pcfg->frc_demo_window == 3) {
+	} else if (pcfg->frc_demo_window == DEMO_WINDOW_UP) {
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_0, 0, 0);
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_1,
 			frc_setting->mv_vres << 16 | frc_setting->mv_hres >> 1, 0);
-	} else if (pcfg->frc_demo_window == 4) {
+	} else if (pcfg->frc_demo_window == DEMO_WINDOW_DOWN) {
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_0,
 			frc_setting->mv_hres >> 1, 0);
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_1,
 			frc_setting->mv_vres << 16 | frc_setting->mv_hres, 0);
-	} else if (pcfg->frc_demo_window == 5) {
+	} else if (pcfg->frc_demo_window == DEMO_WINDOW_FULL ||
+			pcfg->frc_demo_window == DEMO_WINDOW_FULL_OEM) {
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_0,  0, 0);
 		iris_frc_reg_add_i7(IRIS_FI_ADDR + FI_DEMO_WIN_SIZE_1,
 			frc_setting->mv_vres << 16 | frc_setting->mv_hres, 0);
@@ -791,7 +800,12 @@ void iris_fi_demo_window_set_i7(u32 mode)
 
 	pcfg->osd_label = (mode >> 5) & 0x01;
 	pcfg->frc_label = (mode >> 4) & 0x01;
+	pcfg->frc_trilateral = (mode >> 7) & 0x01;
 	pcfg->frc_demo_window = mode & 0xf;
+	if (pcfg->frc_demo_window >= DEMO_WINDOW_MAX)
+		pcfg->frc_demo_window = DEMO_WINDOW_NONE;
+	IRIS_LOGE("FEI_MEMC %s, [0x%x,%d,%d,%d,%d].", __func__, mode, pcfg->osd_label, pcfg->frc_label,
+											pcfg->frc_trilateral, pcfg->frc_demo_window);
 }
 
 int iris_fi_osd_protect_window_calc_i7(u32 top_left_pos, u32 bottom_right_pos,

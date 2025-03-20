@@ -2829,6 +2829,7 @@ int oplus_display_set_power(struct drm_connector *connector,
 	if (power_mode == SDE_MODE_DPMS_OFF)
 		atomic_set(&display->panel->esd_pending, 1);
 
+	display->panel->power_state = power_mode;
 	switch (power_mode) {
 	case SDE_MODE_DPMS_LP1:
 	case SDE_MODE_DPMS_LP2:
@@ -3242,6 +3243,7 @@ static OPLUS_ATTR(high_precision_rscc_set, S_IRUGO | S_IWUSR, oplus_display_get_
 static OPLUS_ATTR(temp_compensation_config, S_IRUGO | S_IWUSR, oplus_temp_compensation_get_config_attr, oplus_temp_compensation_set_config_attr);
 static OPLUS_ATTR(ntc_temp, S_IRUGO | S_IWUSR, oplus_temp_compensation_get_ntc_temp_attr, oplus_temp_compensation_set_ntc_temp_attr);
 static OPLUS_ATTR(shell_temp, S_IRUGO | S_IWUSR, oplus_temp_compensation_get_shell_temp_attr, oplus_temp_compensation_set_shell_temp_attr);
+static OPLUS_ATTR(longrui_aod, S_IRUGO | S_IWUSR, oplus_ofp_get_longrui_aod_config_attr, oplus_ofp_set_longrui_aod_mode_attr);
 #endif /* OPLUS_FEATURE_DISPLAY_TEMP_COMPENSATION */
 static OPLUS_ATTR(hbm_max, S_IRUGO | S_IWUSR, oplus_display_get_hbm_max_debug,
 		oplus_display_set_hbm_max_debug);
@@ -3319,6 +3321,7 @@ static struct attribute *oplus_display_attrs[] = {
 	&oplus_attr_notify_fppress.attr,
 	&oplus_attr_aod_light_mode_set.attr,
 	&oplus_attr_ultra_low_power_aod_mode.attr,
+	&oplus_attr_longrui_aod.attr,
 #endif /* OPLUS_FEATURE_DISPLAY_ONSCREENFINGERPRINT */
 	&oplus_attr_LCM_CABC.attr,
 	&oplus_attr_shutdownflag.attr,

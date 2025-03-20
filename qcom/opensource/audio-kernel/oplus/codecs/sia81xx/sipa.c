@@ -2313,6 +2313,9 @@ int sipa_i2c_probe(
 #ifdef SIA91XX_TYPE
 	struct snd_soc_dai_driver *dai = NULL;
 #endif
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+	oplus_speaker_probe_lock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 
 	pr_info("[ info][%s] %s: i2c addr = 0x%02x \r\n",
 		LOG_FLAG, __func__, client->addr);
@@ -2320,6 +2323,9 @@ int sipa_i2c_probe(
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
 		pr_err("[  err][%s] %s: i2c_check_functionality return -ENODEV \r\n",
 			LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2334,6 +2340,9 @@ int sipa_i2c_probe(
 	if (0 != ret) {
 		pr_err("[  err][%s] %s: get si,si_pa_type return %d !!! \r\n",
 			LOG_FLAG, __func__, ret);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2343,6 +2352,9 @@ int sipa_i2c_probe(
 	if (CHIP_TYPE_UNKNOWN == chip_type) {
 		pr_err("[  err][%s] %s: CHIP_TYPE_UNKNOWN == chip_type !!! \r\n",
 			LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2356,6 +2368,9 @@ int sipa_i2c_probe(
 
 	if (client->addr > 0x7f) {
 		pr_err("[ err][%s] %s: client addr error!\r\n", LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2363,6 +2378,9 @@ int sipa_i2c_probe(
 	if (NULL == si_pa) {
 		pr_err("[  err][%s] %s: get_sipa_dev error !!! \r\n",
 			LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2372,6 +2390,9 @@ int sipa_i2c_probe(
 		pr_err("[  err][%s] %s: regmap_init_i2c error !!! \r\n",
 			LOG_FLAG, __func__);
 		put_sipa_dev(si_pa);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2461,12 +2482,19 @@ int sipa_i2c_probe(
 	ret = sia91xx_detect_chip(si_pa);
 	if (ret < 0) {
 		pr_err("[  err][%s] %s: sia91xx detect fail !!! \r\n", LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return ret;
 	}
 
 	dai = devm_kzalloc(&client->dev, sizeof(sia91xx_dai), GFP_KERNEL);
-	if (NULL == dai)
+	if (NULL == dai) {
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENOMEM;
+	}
 
 	memcpy(dai, sia91xx_dai, sizeof(sia91xx_dai));
 
@@ -2487,11 +2515,16 @@ int sipa_i2c_probe(
 
 	if (ret < 0) {
 		dev_err(&client->dev, "Failed to register sia9195xx: %d\n", ret);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return ret;
 	}
 	pr_info("[info][%s] snd_soc_register_codec ret=%d!\n", __func__, ret);
 #endif
-
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+	oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 	return 0;
 }
 EXPORT_SYMBOL(sipa_i2c_probe);
@@ -2627,6 +2660,10 @@ static int sipa_probe(struct platform_device *pdev)
 #else
 	int owi_pin = 0;
 #endif
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+	oplus_speaker_probe_lock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
+
 	pr_info("[ info][%s] %s: probe \r\n", LOG_FLAG, __func__);
 
 	/* get chip type name */
@@ -2637,6 +2674,9 @@ static int sipa_probe(struct platform_device *pdev)
 	if (0 != ret) {
 		pr_err("[  err][%s] %s: get si,si_pa_type return %d !!! \r\n",
 			LOG_FLAG, __func__, ret);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2646,6 +2686,9 @@ static int sipa_probe(struct platform_device *pdev)
 	if (CHIP_TYPE_UNKNOWN == chip_type) {
 		pr_err("[  err][%s] %s: CHIP_TYPE_UNKNOWN == chip_type !!! \r\n",
 			LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2654,6 +2697,9 @@ static int sipa_probe(struct platform_device *pdev)
 	if (0 != ret) {
 		pr_err("[  err][%s] %s: get si,si_pa_disable_pin return %d !!! \r\n",
 			LOG_FLAG, __func__, ret);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENODEV;
 	}
 
@@ -2671,6 +2717,9 @@ static int sipa_probe(struct platform_device *pdev)
 		if (NULL == si_pa_pinctrl) {
 			pr_err("[  err][%s] %s: NULL == pinctrl !!! \r\n",
 				LOG_FLAG, __func__);
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+			oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 			return -ENODEV;
 		}
 
@@ -2841,8 +2890,12 @@ static int sipa_probe(struct platform_device *pdev)
 
 	snprintf(work_name, 20, "sia91xx_%d", si_pa->channel_num);
 	si_pa->sia91xx_wq = create_singlethread_workqueue(work_name);
-	if (!si_pa->sia91xx_wq)
+	if (!si_pa->sia91xx_wq) {
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+		oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 		return -ENOMEM;
+	}
 
 	if (CHIP_TYPE_SIA8100X == si_pa->chip_type ||
 	    CHIP_TYPE_SIA8001 == si_pa->chip_type  ||
@@ -2926,7 +2979,9 @@ out:
 	if (0 == disable_pin) {
 		devm_pinctrl_put(si_pa_pinctrl);
 	}
-
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+	oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 	return ret;
 
 put_dev_out:
@@ -2940,7 +2995,9 @@ put_dev_out:
 		devm_pinctrl_put(si_pa_pinctrl);
 	}
 	put_sipa_dev(si_pa);
-
+#if IS_ENABLED(CONFIG_SND_SOC_OPLUS_PA_MANAGER)
+	oplus_speaker_probe_unlock();
+#endif /* CONFIG_SND_SOC_OPLUS_PA_MANAGER */
 	return ret;
 }
 

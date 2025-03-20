@@ -3054,15 +3054,6 @@ void oplus_apollo_async_bl_delay(struct dsi_panel *panel)
 	struct sde_encoder_virt *sde_enc;
 	int high_precision_fps;
 
-	high_precision_fps = oplus_adfr_get_panel_high_precision_state(display);
-	if (high_precision_fps > 0) {
-		us_per_frame = 1000000 / high_precision_fps;
-	} else {
-		us_per_frame = panel->cur_mode->priv_info->vsync_period;
-	}
-	async_bl_delay = panel->cur_mode->priv_info->async_bl_delay;
-	last_te_timestamp = panel->te_timestamp;
-
 	if(!strcmp(panel->type, "primary")) {
 		display = get_main_display();
 	} else if (!strcmp(panel->type, "secondary")) {
@@ -3076,6 +3067,15 @@ void oplus_apollo_async_bl_delay(struct dsi_panel *panel)
 		DSI_ERR("invalid encoder params\n");
 		return;
 	}
+
+	high_precision_fps = oplus_adfr_get_panel_high_precision_state(display);
+	if (high_precision_fps > 0) {
+		us_per_frame = 1000000 / high_precision_fps;
+	} else {
+		us_per_frame = panel->cur_mode->priv_info->vsync_period;
+	}
+	async_bl_delay = panel->cur_mode->priv_info->async_bl_delay;
+	last_te_timestamp = panel->te_timestamp;
 
 	duration = ktime_to_us(ktime_sub(ktime_get(), last_te_timestamp));
 	if(duration > 3 * us_per_frame || sde_enc->rc_state == 4) {

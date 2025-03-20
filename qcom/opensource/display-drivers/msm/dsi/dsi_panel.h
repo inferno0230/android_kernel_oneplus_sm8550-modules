@@ -445,6 +445,7 @@ struct dsi_panel {
 	u32 last_vsync_width;
 	u32 last_refresh_rate;
 	u32 work_frame;
+	int power_state;
 #endif /* OPLUS_FEATURE_DISPLAY */
 
 #if defined(CONFIG_PXLW_IRIS)
