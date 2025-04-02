@@ -4176,6 +4176,19 @@ int register_common_touch_device(struct touchpanel_data *pdata)
 		ts->limit_enable = 1;
 	}
 
+#ifdef CONFIG_ARCH_CROW
+	clear_bit(BTN_1, ts->input_dev->keybit);
+	clear_bit(BTN_2, ts->input_dev->keybit);
+	clear_bit(BTN_3, ts->input_dev->keybit);
+	clear_bit(BTN_4, ts->input_dev->keybit);
+	clear_bit(BTN_5, ts->input_dev->keybit);
+	clear_bit(BTN_6, ts->input_dev->keybit);
+	clear_bit(BTN_7, ts->input_dev->keybit);
+	clear_bit(BTN_8, ts->input_dev->keybit);
+	clear_bit(BTN_MISC, ts->input_dev->keybit);
+	input_sync(ts->input_dev);
+#endif
+
 	ts->bus_ready = true;
 	ts->loading_fw = false;
 	ts->is_suspended = 0;
